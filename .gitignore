@@ -1,0 +1,11 @@
+# ignoruj wszystko
+*
+
+# nie ignoruj plików .asm
+!*.asm
+
+# nie ignoruj podfolderów
+!*/
+
+!.gitignore
+!README.md
