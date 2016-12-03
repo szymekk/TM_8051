@@ -10,24 +10,22 @@
 
 .org 30h
 INIT:
+	; parametry programu
 	MOV	TMOD,	#01h	; tryb 16-bitowy
-
 	MOV	TL0,	#0BEh	; 0xFCBE = 64702, dla przerwań co 1 ms (1000 Hz)
 	MOV	TH0,	#0FCh
+	MOV	R3,	#10	; łączna ilość okresów ON + OFF
+	MOV	R2,	#4	; ilość okresów ON
 
-	CLR	P2.2
-
-	MOV	R2,	#10	; łączna ilość okresów ON + OFF
-	MOV	R0,	#7	; ilość okresów ON
-	MOV	P0,	#7
-
-	MOV	R1,	#1
-	;MOV	R0,	#7	; inicjalizacja licznika przerwać
-				; sto przerwań mija co 100 ms (10 Hz)
+	MOV	A,	R2
+	MOV	R0,	A	; R0 zlicza przerwania
 
 	SETB	EA		; globalne zezwolenie na przerwania
 	SETB	ET0		; zezwolenie na przerwania od timera 0
 	SETB	TR0		; uruchomienie T0
+
+	MOV	R1,	#1	; wybranie trybu OFF po pierwszym przebiegu
+	CLR	P2.2		; włączenie diody
 	
 MAIN:
 	JMP	MAIN
@@ -38,14 +36,17 @@ T0_IR:
 
 	DJNZ	R0,	WAIT_1_MS
 
-	MOV	R0,	P0	; R0 = ON
+	MOV	A,	R2
+	MOV	R0,	A	; R0 = ON
+
+;	MOV	R0,	P0	; R0 = ON
 
 	DJNZ	R1,	ON
 OFF:	MOV	R1,	#2;
 
 	SETB	P2.2
 
-	MOV	A,	R2	; A = ON + OFF
+	MOV	A,	R3	; A = ON + OFF
 	SUBB	A,	R0	; A = A - R0 = OFF
 	MOV	R0,	A	; reset licznika do ilości cykli OFF
 
