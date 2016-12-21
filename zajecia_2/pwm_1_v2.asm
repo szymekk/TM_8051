@@ -1,11 +1,13 @@
-;program realizujący PWM przerwania co 1000 Hz
+;program realizujący świecenie diodą
+;jasność regulowana poprzez PWM
 
+;przerwania co 1000 Hz
 ;zegar taktowany częstotliwością 10 MHz
 
 .org 00h
 	JMP	INIT
 
-.org 0Bh			; obługa przerwania od T0
+.org 0Bh			; obsługa przerwania od T0
 	JMP	T0_IR
 
 .org 30h
@@ -14,8 +16,8 @@ INIT:
 	MOV	TMOD,	#01h	; tryb 16-bitowy
 	MOV	TL0,	#0BEh	; 0xFCBE = 64702, dla przerwań co 1 ms (1000 Hz)
 	MOV	TH0,	#0FCh
-	MOV	R3,	#10	; łączna ilość okresów ON + OFF
-	MOV	R2,	#4	; ilość okresów ON
+	MOV	R3,	#20	; łączna ilość okresów ON + OFF
+	MOV	R2,	#1	; ilość okresów ON
 
 	MOV	A,	R2
 	MOV	R0,	A	; R0 zlicza przerwania
@@ -25,7 +27,10 @@ INIT:
 	SETB	TR0		; uruchomienie T0
 
 	MOV	R1,	#1	; wybranie trybu OFF po pierwszym przebiegu
+
+	CLR	P2.1		; dla porównania
 	CLR	P2.2		; włączenie diody
+	CLR	P2.3		; dla porównania
 	
 MAIN:
 	JMP	MAIN
@@ -38,8 +43,6 @@ T0_IR:
 
 	MOV	A,	R2
 	MOV	R0,	A	; R0 = ON
-
-;	MOV	R0,	P0	; R0 = ON
 
 	DJNZ	R1,	ON
 OFF:	MOV	R1,	#2;
