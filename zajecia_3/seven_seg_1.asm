@@ -5,13 +5,13 @@
 org 00h
 	JMP	INIT
 
-.org 30h
+org 30h
 INIT:
 			;Kgfedcba	- K to kropka
-	MOV	P0, #01000000b	;cyfra zero
-	MOV	P1,	#00000011b	;wybór wyswietlacza - pierwszy i drugi
+	MOV	P0,	#01000000b	;cyfra zero
+	MOV	P1,	#00000011b	;wybór wyświetlaczy - pierwszy i drugi
 
 MAIN:
 	JMP	MAIN
 
-.end
+end

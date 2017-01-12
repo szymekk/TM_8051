@@ -8,22 +8,22 @@ org 00h
 	JMP	INIT
 
 
-.org 0Bh			; obsługa przerwania od T0
+org 0Bh			; obsługa przerwania od T0
 	JMP	T0_IR
 
-.org 1Bh			; obsługa przerwania od T1
+org 1Bh			; obsługa przerwania od T1
 	JMP	T1_IR
 
-.org 30h
+org 30h
 INIT:
 	; P1 służy do wyboru wyświetlacza
 	; P0 służy do wyboru segmentów wyświetlacza
 	; Kgfedcba	- K to kropka
 	
 	; przykładowo:
-			   ; Kgfedcba	- K to kropka
-	; MOV	P0, #01000000b	; cyfra zero z kropką
-	; MOV	P1,	#00001001b	; wybór wyswietlaczy pierwszego i czwartego
+				;Kgfedcba	- K to kropka
+	; MOV	P0,	#01000000b	; cyfra zero z kropką
+	; MOV	P1,	#00001001b	; wybór wyświetlaczy pierwszego i czwartego
 
 	; DPTR wskazuje na tablicę przekodowań
 	MOV	DPTR, #LED_TABLE
@@ -31,10 +31,10 @@ INIT:
 	MOV R0, #0;		; inicjalizacja licznik wyboru zegara
 	
 	
-	; przerwania od zegara T0 służa do zmiany aktywnego wyświetlacza
+	; przerwania od zegara T0 służą do zmiany aktywnego wyświetlacza
 
 	; inicjalizacja wartości początkowej liczbą 8654
-	MOV R7, #8		; cyfra na 4 (tysiącie)
+	MOV R7, #8		; cyfra na 4 (tysiące)
 	MOV R6, #6		; cyfra na 3 (setki)
 	MOV R5, #5		; cyfra na 2 (dziesiątki)
 	MOV R4, #4		; cyfra na 1 (jedności)
@@ -44,14 +44,13 @@ INIT:
 						; odmierzającego jedną sekundę
 						; co sekundę zwiększa się wartość do wyświetlenia na liczniku
 
-						
 	MOV	TMOD,	#0x11	; tryb 16-bitowy dla obu zegarów
 
-	; przerwania od zegara T0 służa do zmiany aktywnego wyświetlacza
+	; przerwania od zegara T0 służą do zmiany aktywnego wyświetlacza
 	MOV	TL0,	#0xDB	; 0xF7DB = 63451, dla przerwań co 2,5 ms (400 Hz) -> całość 100 Hz
 	MOV	TH0,	#0xF7
 
-	; przerwania od zegara T1 służa do zmiany wartości licznika
+	; przerwania od zegara T1 służą do zmiany wartości licznika
 	MOV	TL1,	#0x6C	; 0xDF6C = 64702, dla przerwań co 10 ms (100 Hz)
 	MOV	TH1,	#0xDF
 
@@ -79,21 +78,21 @@ T1_IR:
 	; zwiększenie wartości na liczniku
 	
 	INC	R4
-	CJNE R4, #10, OK
+	CJNE R4,#10, OK
 	
 	MOV	R4,	#0
 	INC	R5
-	CJNE R5, #10, OK
+	CJNE R5,#10, OK
 
 	MOV	R5,	#0
 	INC	R6
-	CJNE R6, #10, OK
+	CJNE R6,#10, OK
 
-	MOV	R6, #0
+	MOV	R6,	#0
 	INC	R7
-	CJNE R7, #10, OK
+	CJNE R7,#10, OK
 
-	MOV	R7, #0
+	MOV	R7,	#0
 	
 OK:
 
@@ -108,7 +107,7 @@ T0_IR:
 
 CHOOSE_DISP:
 	INC	R0;
-	CJNE R0, #04h, CHANGE_DISP
+	CJNE R0,#04h, CHANGE_DISP
 	
 	MOV	R0,	#0			; reset licznika cyfr
 
@@ -117,33 +116,33 @@ CHANGE_DISP:
 						; żeby uniknąć poświaty
 
 
-	CJNE R0, #00h, AFTER_FIRST
+	CJNE R0,#00h, AFTER_FIRST
 	MOV	A,	R4			; R4 przechowuje cyfrę jedności
 	MOVC	A,	@A+DPTR	; dereferencja spod adresu R4 + LED_TABLE
-	MOV	P0, 	A		; cyfra jedności (z R4)
+	MOV	P0,	A			; cyfra jedności (z R4)
 	MOV	P1,	#00000001b	; włącz pierwszy wyświetlacz
 	JMP	KONIEC
 
 AFTER_FIRST:
-	CJNE R0, #01h, AFTER_SECOND
+	CJNE R0,#01h, AFTER_SECOND
 	MOV	A,	R5
 	MOVC	A,	@A+DPTR
-	MOV	P0, 	A		; cyfra dziesątek (z R5)
+	MOV	P0,	A			; cyfra dziesiątek (z R5)
 	MOV	P1,	#00000010b	; włącz drugi wyświetlacz
 	JMP	KONIEC
 
 AFTER_SECOND:
-	CJNE R0, #02h, FOURTH
+	CJNE R0,#02h, FOURTH
 	MOV	A,	R6
 	MOVC	A,	@A+DPTR
-	MOV	P0, 	A		; cyfra setek (z R6)
+	MOV	P0,	A			; cyfra setek (z R6)
 	MOV	P1,	#00000100b	; włącz trzeci wyświetlacz
 	JMP	KONIEC
 	
 FOURTH:
 	MOV	A,	R7
 	MOVC	A,	@A+DPTR
-	MOV	P0, 	A		; cyfra tysięcy (z R7)
+	MOV	P0,	A			; cyfra tysięcy (z R7)
 	MOV	P1,	#00001000b	; włącz czwarty wyświetlacz
 
 KONIEC:
@@ -163,4 +162,4 @@ DB 11111000b; 7
 DB 10000000b; 8
 DB 10010000b; 9
 
-.end
+end

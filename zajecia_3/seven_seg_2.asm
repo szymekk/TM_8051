@@ -1,13 +1,12 @@
 ;program realizujący wyświetlanie liczby 4321
 
-
 org 00h
 	JMP	INIT
 
-.org 0Bh			; obsługa przerwania od T0
+org 0Bh			; obsługa przerwania od T0
 	JMP	T0_IR
 
-.org 30h
+org 30h
 INIT:
 	;P1 służy do wyboru wyświetlacza
 	;P0 służy do wyboru segmentów wyświetlacza
@@ -15,14 +14,14 @@ INIT:
 	
 	;przykładowo:
 				;Kgfedcba	- K to kropka
-	;MOV	P0, #01000000b	;cyfra zero z kropką
-	;MOV	P1,	#00001001b	;wybór wyswietlaczy pierwszego i czwartego
+	;MOV	P0,	#01000000b	;cyfra zero z kropką
+	;MOV	P1,	#00001001b	;wybór wyświetlaczy pierwszego i czwartego
 
 
 	MOV R0, #0;		; inicjalizacja licznik wyboru wyświetlacza
 	
-	;przerwania od zegara T0 służa do zmiany aktywnego wyświetlacza
-	MOV	TMOD,	#0x1	; tryb 16-bitowy
+	;przerwania od zegara T0 służą do zmiany aktywnego wyświetlacza
+	MOV	TMOD,	#0x01	; tryb 16-bitowy T0
 	MOV	TL0,	#0xDB	; 0xF7DB = 63451, dla przerwań co 2,5 ms (400 Hz) -> całość 100 Hz
 	MOV	TH0,	#0xF7
 
@@ -41,7 +40,7 @@ T0_IR:
 
 CHOOSE_DISP:
 	INC	R0;
-	CJNE R0, #04h, CHANGE_DISP
+	CJNE R0,#04h, CHANGE_DISP
 	
 	MOV	R0,	#0	; reset licznika
 
@@ -52,31 +51,31 @@ CHANGE_DISP:
 
 				;wyświetlacze
 				
-	CJNE R0, #00h, AFTER_FIRST
-	MOV	P0, #11111001b	;cyfra jeden
+	CJNE R0,#00h, AFTER_FIRST
+	MOV	P0,	#11111001b	;cyfra jeden
 	MOV	P1,	#00000001b	;włącz pierwszy wyświetlacz
 	JMP	KONIEC
 
 AFTER_FIRST:	;wyświetlacz drugi lub trzeci lub czwarty
 
-	CJNE R0, #01h, AFTER_SECOND
-	MOV	P0, #10100100b	;cyfra dwa
+	CJNE R0,#01h, AFTER_SECOND
+	MOV	P0,	#10100100b	;cyfra dwa
 	MOV	P1,	#00000010b	;włącz drugi wyświetlacz
 	JMP	KONIEC
 
 AFTER_SECOND:	;wyświetlacz trzeci lub czwarty
 
-	CJNE R0, #02h, FOURTH
-	MOV	P0, #10110000b	;cyfra trzy
+	CJNE R0,#02h, FOURTH
+	MOV	P0,	#10110000b	;cyfra trzy
 	MOV	P1,	#00000100b	;włącz trzeci wyświetlacz
 	JMP	KONIEC
 	
 FOURTH:			;wyświetlacz czwarty
 
-	MOV	P0, #10011001b	;cyfra cztery
+	MOV	P0,	#10011001b	;cyfra cztery
 	MOV	P1,	#00001000b	;włącz czwarty wyświetlacz
 
 KONIEC:
 	RETI
 
-.end
+end
