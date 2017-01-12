@@ -1,5 +1,7 @@
 ; echo selektywne z przerwaniami i wyświetlaniem
-; odsyła tylko cyfry
+; program odbiera przysłany znak
+; jeśli odebrano cyfrę to odsyła ją spowrotem i wyświetla
+; wyświetlanie na czterech wyświetlaczach siedmiosegmentowych
 
 
 org 00h
@@ -12,58 +14,46 @@ org 23h
 .org 30h
 INIT:
 
-	; inicjalizacja warto\u0139ci poczÄtkowej liczbÄ 8654
-	MOV R7, #8		; cyfra na 4 (tysiÄcie)
-	MOV R6, #6		; cyfra na 3 (setki)
-	MOV R5, #5		; cyfra na 2 (dziesiÄtki)
-	MOV R4, #4		; cyfra na 1 (jedno\u0139ci)
-
+	; inicjalizacja wartości na wyświetlaczach liczbą 8654
+	MOV R7, #8			; cyfra na 4 (tysiące)
+	MOV R6, #6			; cyfra na 3 (setki)
+	MOV R5, #5			; cyfra na 2 (dziesiątki)
+	MOV R4, #4			; cyfra na 1 (jedności)
 
 	MOV	DPTR, #LED_TABLE
 
-						
-	;MOV	TMOD,	#20h	; tryb 8-bitowy z autoprzeładowaniem dla zegara T1 (dla portu szeregowego)
-	MOV	TMOD,	#21h	; tryb 8-bitowy z autoprzeładowaniem dla zegara T1 (dla portu szeregowego)
-				; T0 w tryb 16-bit
+	MOV	TMOD, #21h		; tryb 8-bitowy z autoprzeładowaniem dla zegara T1 (dla portu szeregowego)
+						; T0 w trybie 16-bitowy (dla wyświetlaczy)
 	MOV SCON, #50h
 	MOV PCON, #00h
 
-	MOV	TL1,	#212	; 212, dla 1200 baud przy 10 MHz i 6 taktów na cykl
-	MOV	TH1,	#212
+	MOV	TL1,	#213	; 213, dla 1200 baud przy 10 MHz i 6 taktów na cykl
+	MOV	TH1,	#213	; przy normalnej ilości taktów na cykl (12) trzeba użyć wartości 234
 
-	; przerwania od zegara T0 sluzy do zmiany aktywnego wyswietlacza
-	MOV	TL0,	#0xDB	; 0xF7DB = 63451, dla przerwa\u0139 co 2,5 ms (400 Hz) -> ca\u0139o\u0139Ä 100 Hz
-	MOV	TH0,	#0xF7
+	; przerwanie od zegara T0 sluzy do zmiany aktywnego wyswietlacza
+	MOV	TL0,	#0xDB	; 0xF7DB = 63451, dla przerwań co 2,5 ms (400 Hz) -> całość 100 Hz
+	MOV	TH0,	#0xF7	; przy 6 taktach na cykl daje to całość 200 Hz
 
-	SETB	EA		; globalne zezwolenie na przerwania
+	SETB	EA			; globalne zezwolenie na przerwania
+	SETB	ES			; zezwolenie na przerwania od portu szeregowego
+	SETB	ET0			; zezwolenie na przerwania od timera 0
 
-	SETB	ES		; zezwolenie na przerwania od portu szeregowego
-
-	SETB	TR1		; uruchomienie T1
-
-	SETB	ET0		; zezwolenie na przerwania od timera 0
-	SETB	TR0		; uruchomienie T0
-
-	MOV SBUF, #48
-
+	SETB	TR0			; uruchomienie T0
+	SETB	TR1			; uruchomienie T1
 
 
 MAIN:
 	JMP	MAIN
 
 
-
-
 SERIAL_IRQ:
-	JNB RI, NIE_PRZYSZLO
+	JNB RI, END_SERIAL
 	; coś przyszło - RI ustawione
-	MOV A, SBUF ;odbieramy
+	MOV A, SBUF 		; odebranie
 	CLR RI
 
-; w A jest to co przyszło
-	CLR C;
-	;SUBB A, #48 ; jeśli przyszla cyfra to w A będzie jej wartość
-	
+	; w A jest to co przyszło
+	CLR C;	
 	CJNE A, #58, TUTAJ_1
 	TUTAJ_1:
 
@@ -77,39 +67,23 @@ JEST_MNIEJSZE_LUB_ROWNE_9:
 
 	JC POZA_ZAKRESEM
 
-ODSYLANIE:
-
+	; wyświetlanie
 	PUSH ACC
-	SUBB A, #48
+	SUBB A, #48			; odejmij 48 - wartość znaku '0'
 	MOV R7, A
 	MOV R6, A
 	MOV R5, A
 	MOV R4, A
 	POP ACC
-	;najpierw CLR!!!
+
+	; odsyłanie
+	; najpierw CLR!!!
 	CLR TI
-	MOV SBUF, A ;odsyłamy
-	JMP END_SERIAL
+	MOV SBUF, A 		; odesłanie
 
-NIE_PRZYSZLO:
-	;sprawdzenie czy wysłano
-	JNB TI, NIC
-	;wysłano
-
+POZA_ZAKRESEM:
 END_SERIAL:
 	RETI
-POZA_ZAKRESEM:
-	RETI
-
-
-NIC:
-	RETI
-
-
-
-
-
-
 
 
 T0_IR:
@@ -123,23 +97,22 @@ CHOOSE_DISP:
 	MOV	R0,	#0			; reset licznika cyfr
 
 CHANGE_DISP:
-	MOV	P1,	#00000000b	; wy\u0139Äczenie wszystkich wy\u0139wietlaczy
-						; \u0139\u017aeby uniknÄÄ po\u0139wiaty
-
+	MOV	P1,	#00000000b	; wyłączenie wszystkich wyświetlaczy
+						; żeby uniknąć poświaty
 
 	CJNE R0, #00h, AFTER_FIRST
-	MOV	A,	R4			; R4 przechowuje cyfrÄ jedno\u0139ci
+	MOV	A,	R4			; R4 przechowuje cyfrę jedności
 	MOVC	A,	@A+DPTR	; dereferencja spod adresu R4 + LED_TABLE
-	MOV	P0, 	A		; cyfra jedno\u0139ci (z R4)
-	MOV	P1,	#00000001b	; w\u0139Äcz pierwszy wy\u0139wietlacz
+	MOV	P0, 	A		; cyfra jedności (z R4)
+	MOV	P1,	#00000001b	; włącz pierwszy wyświetlacz
 	JMP	KONIEC
 
 AFTER_FIRST:
 	CJNE R0, #01h, AFTER_SECOND
 	MOV	A,	R5
 	MOVC	A,	@A+DPTR
-	MOV	P0, 	A		; cyfra dziesÄtek (z R5)
-	MOV	P1,	#00000010b	; w\u0139Äcz drugi wy\u0139wietlacz
+	MOV	P0, 	A		; cyfra dzisiątek (z R5)
+	MOV	P1,	#00000010b	; włącz drugi wyświetlacz
 	JMP	KONIEC
 
 AFTER_SECOND:
@@ -147,19 +120,19 @@ AFTER_SECOND:
 	MOV	A,	R6
 	MOVC	A,	@A+DPTR
 	MOV	P0, 	A		; cyfra setek (z R6)
-	MOV	P1,	#00000100b	; w\u0139Äcz trzeci wy\u0139wietlacz
+	MOV	P1,	#00000100b	; włącz trzeci wyświetlacz
 	JMP	KONIEC
 	
 FOURTH:
 	MOV	A,	R7
 	MOVC	A,	@A+DPTR
-	MOV	P0, 	A		; cyfra tysiÄcy (z R7)
-	MOV	P1,	#00001000b	; w\u0139Äcz czwarty wy\u0139wietlacz
+	MOV	P0, 	A		; cyfra tysięcy (z R7)
+	MOV	P1,	#00001000b	; włącz czwarty wyświetlacz
 
 KONIEC:
 	RETI
 
-; tablica przekodowa\u0139
+; tablica przekodowań
 LED_TABLE:
  ; Kgfedcba	- K to kropka
 DB 11000000b; 0
