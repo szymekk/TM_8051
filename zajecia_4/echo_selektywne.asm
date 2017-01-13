@@ -1,6 +1,6 @@
 ; echo selektywne z przerwaniami
 ; program odbiera przysłany znak
-; jeśli odebrano cyfrę to odsyła ją spowrotem
+; jeśli odebrano cyfrę to odsyła ją z powrotem
 
 
 org 00h
@@ -8,12 +8,12 @@ org 00h
 org 23h
 	JMP	SERIAL_IRQ
 
-.org 30h
+org 30h
 INIT:
 
-	MOV	TMOD, #20h		; tryb 8-bitowy z autoprzeładowaniem dla zegara T1 (dla portu szeregowego)
-	MOV SCON, #50h
-	MOV PCON, #00h
+	MOV	TMOD,	#20h	; tryb 8-bitowy z autoprzeładowaniem dla zegara T1 (dla portu szeregowego)
+	MOV	SCON,	#50h
+	MOV	PCON,	#00h
 
 	; 256 - (10 000 000/(12*32*1200)) = 234
 	; 256 - (10 000 000/(6*32*1200)) = 213
@@ -31,37 +31,34 @@ MAIN:
 
 
 SERIAL_IRQ:
-	JNB RI, END_SERIAL
+	JNB	RI,	END_SERIAL
 	; coś przyszło - RI ustawione
-	MOV A, SBUF 		; odebranie
-	CLR RI
+	MOV	A,	SBUF 		; odebranie
+	CLR	RI
 
 	; w A jest to co przyszło
-	CLR C;
-	CJNE A, #58, TUTAJ_1
+	CLR	C
+	CJNE	A,	#58,	TUTAJ_1
 	TUTAJ_1:
 
 	JC JEST_MNIEJSZE_LUB_ROWNE_9
 	JMP POZA_ZAKRESEM
 
 JEST_MNIEJSZE_LUB_ROWNE_9:
-	CLR C;
-	CJNE A, #48, TUTAJ_2
+	CLR	C
+	CJNE	A,	#48,	TUTAJ_2
 	TUTAJ_2:
 
-	JC POZA_ZAKRESEM
+	JC	POZA_ZAKRESEM
 
 	; odsyłanie
 	; najpierw CLR!!!
-	CLR TI
-	MOV SBUF, A 		; odesłanie
+	CLR	TI
+	MOV	SBUF,	A		; odesłanie
 
 POZA_ZAKRESEM:
 END_SERIAL:
 	RETI
 
 
-.end
-
-
-
+end

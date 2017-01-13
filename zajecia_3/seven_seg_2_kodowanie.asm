@@ -53,8 +53,6 @@ CHANGE_DISP:
 	MOV	P1,	#00000000b	; wyłączenie wszystkich wyświetlaczy
 						; żeby uniknąć poświaty
 
-
-
 	CJNE R0,#00h, AFTER_FIRST
 	MOV	A,	#4
 	MOVC	A,	@A+DPTR	; dereferencja spod adresu 4 + LED_TABLE

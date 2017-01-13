@@ -4,12 +4,12 @@
 org 00h
 	JMP	INIT
 
-.org 30h
+org 30h
 INIT:
 
-	MOV	TMOD, #20h	; tryb 8-bitowy z autoprzeładowaniem dla zegara T1 (dla portu szeregowego)
-	MOV SCON, #50h
-	MOV PCON, #00h
+	MOV	TMOD,	#20h	; tryb 8-bitowy z autoprzeładowaniem dla zegara T1 (dla portu szeregowego)
+	MOV	SCON,	#50h
+	MOV	PCON,	#00h
 
 	; 256 - (10 000 000/(12*32*1200)) = 234
 	; 256 - (10 000 000/(6*32*1200)) = 213
@@ -22,8 +22,8 @@ INIT:
 MAIN:
 	JNB	TI,	MAIN		; jeszcze nie wysłano, czekaj
 	; najpierw CLR!!!
-	CLR TI
-	MOV SBUF, #48		; wysłanie znaku '0'
+	CLR	TI
+	MOV	SBUF,	#48		; wysłanie znaku '0'
 
 
-.end
+end

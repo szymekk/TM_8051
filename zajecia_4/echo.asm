@@ -1,5 +1,5 @@
 ; echo z przerwaniami
-; program odbiera przysłany znak, po czym odsyła go spowrotem
+; program odbiera przysłany znak, po czym odsyła go z powrotem
 
 
 org 00h
@@ -7,12 +7,12 @@ org 00h
 org 23h
 	JMP	SERIAL_IRQ
 
-.org 30h
+org 30h
 INIT:
 
-	MOV	TMOD, #20h		; tryb 8-bitowy z autoprzeładowaniem dla zegara T1 (dla portu szeregowego)
-	MOV SCON, #50h
-	MOV PCON, #00h
+	MOV	TMOD,	#20h	; tryb 8-bitowy z autoprzeładowaniem dla zegara T1 (dla portu szeregowego)
+	MOV	SCON,	#50h
+	MOV	PCON,	#00h
 
 	; 256 - (10 000 000/(12*32*1200)) = 234
 	; 256 - (10 000 000/(6*32*1200)) = 213
@@ -30,17 +30,17 @@ MAIN:
 
 
 SERIAL_IRQ:
-	JNB RI, END_SERIAL
+	JNB	RI,	END_SERIAL
 	; coś przyszło - RI ustawione
-	MOV A, SBUF			; odebranie
-	CLR RI
+	MOV	A,	SBUF		; odebranie
+	CLR	RI
 
 	; najpierw CLR!!!
-	CLR TI
-	MOV SBUF, A			; odesłanie
+	CLR	TI
+	MOV	SBUF,	A		; odesłanie
 
 END_SERIAL:
 	RETI
 
-	
-.end
+
+end

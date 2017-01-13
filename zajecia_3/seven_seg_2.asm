@@ -48,9 +48,6 @@ CHANGE_DISP:
 	MOV	P1,	#00000000b	;wyłączenie wszystkich wyświetlaczy
 						;żeby uniknąć poświaty
 
-
-				;wyświetlacze
-				
 	CJNE R0,#00h, AFTER_FIRST
 	MOV	P0,	#11111001b	;cyfra jeden
 	MOV	P1,	#00000001b	;włącz pierwszy wyświetlacz
